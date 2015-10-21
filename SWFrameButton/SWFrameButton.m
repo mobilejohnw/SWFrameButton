@@ -199,26 +199,31 @@ static UIEdgeInsets const SWContentEdgeInsets = {5, 10, 5, 10};
 }
 
 - (UIImage *)sw_backgroundImage {
+    UIImage *image = nil;
+    
     CGRect rect = self.bounds;
     UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
-    NSRange range =NSMakeRange(0, self.titleLabel.text.length);
+    if (context != nil) {
+        NSRange range =NSMakeRange(0, self.titleLabel.text.length);
+        
+        UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:self.cornerRadius];
+        CGContextSetFillColorWithColor(context, self.tintColor.CGColor);
+        [path fill];
+        NSAttributedString *attributedString =    self.titleLabel.attributedText;
+        
+        NSDictionary *dict = [attributedString attributesAtIndex:0 effectiveRange:&range];
+        
+        CGContextSetBlendMode(context, kCGBlendModeDestinationOut);
+        
+        [self.titleLabel.text drawInRect:self.titleLabel.frame withAttributes:dict];
+        UIImage *i = self.imageView.image;
+        [i drawAtPoint:self.imageView.frame.origin blendMode:kCGBlendModeDestinationOut alpha:1];
+        
+        image = UIGraphicsGetImageFromCurrentImageContext();
+    }
     
-    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:self.cornerRadius];
-    CGContextSetFillColorWithColor(context, self.tintColor.CGColor);
-    [path fill];
-    NSAttributedString *attributedString =    self.titleLabel.attributedText;
-
-    NSDictionary *dict = [attributedString attributesAtIndex:0 effectiveRange:&range];
-
-    CGContextSetBlendMode(context, kCGBlendModeDestinationOut);
-    
-    [self.titleLabel.text drawInRect:self.titleLabel.frame withAttributes:dict];
-    UIImage *i = self.imageView.image;
-    [i drawAtPoint:self.imageView.frame.origin blendMode:kCGBlendModeDestinationOut alpha:1];
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
     return image;
